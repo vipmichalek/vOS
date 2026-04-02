@@ -36,8 +36,6 @@ int rand() {
     return (unsigned int)(next_rand / 65536) % 32768;
 }
 
-
-
 struct idt_entry {
     unsigned short base_low;
     unsigned short selector;      
@@ -434,7 +432,7 @@ void process_command(char* cmd, int* cy) {
         write_buf[0] = 0xADDE;
         for(int i=1; i<255; i++) write_buf[i] = 0x0000; 
 
-        kprint_str_gfx("WRITING TO LBA0...", 10, *cy, 0x00FF00);
+        kprint_str_gfx("WRITING TO LBA0...", 10, *cy, 0x00FFFF);
         ata_write_sector(0, write_buf);
         *cy += 14;
         kprint_str_gfx("DONE.", 10, *cy, 0xFFFFFF);
@@ -450,14 +448,14 @@ void process_command(char* cmd, int* cy) {
     else if (strcmp(cmd, "DUMP")) {
         //to jest po prostu dump z podanego adresu
         char msg[] = "dump";
-        kprint_str_gfx(msg, 10, *cy, 0xFFFF00);
+        kprint_str_gfx(msg, 10, *cy, 0xFFFFFF);
         *cy += 14;
         dump_mem(0x100000, 40, cy);
     }
     else if (strcmp(cmd, "PEEK")) {
         //to też
         char msg[] = "dump";
-        kprint_str_gfx(msg, 10, *cy, 0x00FFFF);
+        kprint_str_gfx(msg, 10, *cy, 0xFFFFFF);
         *cy += 14;     
         dump_mem((unsigned int)0x5000000, 10, cy);
     }
@@ -568,8 +566,6 @@ void main() {
     
     __asm__ volatile("sti");
 
-    char text[] = "vos 0.2 beta"; 
-
     unsigned short low_kb = *(volatile unsigned short*)0x7000;
     unsigned short high_64kb = *(volatile unsigned short*)0x7004;
     unsigned int total_mb = (unsigned int)(low_kb / 1024) + ((unsigned int)high_64kb * 64 / 1024) + 1;
@@ -577,7 +573,7 @@ void main() {
     char val_str[12];
     itoa(total_mb, val_str);
 
-    kprint_str_gfx(text, 10, 10, 0xFFFFFF);
+    kprint_str_gfx("vos 0.2 beta", 10, 10, 0xFFFFFF);
     kprint_str_gfx("RAM: ", 10, 30, 0xFFFFFF);
     kprint_str_gfx(val_str, 50, 30, 0xFFFFFF);
     kprint_str_gfx("MB", 80, 30, 0xFFFFFF);

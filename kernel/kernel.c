@@ -374,6 +374,22 @@ void ata_read_sector(unsigned int lba, unsigned short* buffer) {
     }
 }
 
+void ata_write_sector(unsigned int lba, unsigned short* buffer) {
+    outb(0x1F6, (0xE0 | ((lba >> 24) & 0x0F))); 
+    outb(0x1F2, 1);                             
+    outb(0x1F3, (unsigned char)lba);            
+    outb(0x1F4, (unsigned char)(lba >> 8));     
+    outb(0x1F5, (unsigned char)(lba >> 16));    
+    outb(0x1F7, 0x30);                          
+    while (inb(0x1F7) & 0x80); 
+    while (!(inb(0x1F7) & 0x08)); 
+    for (int i = 0; i < 256; i++) {
+        outw(0x1F0, buffer[i]);
+    }
+    outb(0x1F7, 0xE7);
+    while (inb(0x1F7) & 0x80); 
+}
+
 void dump_sector(unsigned short* buffer, int* cy) {
     char hex_val[3];
     unsigned char* byte_ptr = (unsigned char*)buffer;
@@ -411,6 +427,18 @@ void process_command(char* cmd, int* cy) {
         dump_sector(disk_buf, cy);
         
         screen_update();
+    }
+    else if (strcmp(cmd, "WRITE")) {
+        unsigned short* write_buf = (unsigned short*)kmalloc(512);
+        // Wypełnij bufor testowymi danymi
+        write_buf[0] = 0xADDE;
+        for(int i=1; i<255; i++) write_buf[i] = 0x0000; 
+
+        kprint_str_gfx("WRITING TO LBA0...", 10, *cy, 0x00FF00);
+        ata_write_sector(0, write_buf);
+        *cy += 14;
+        kprint_str_gfx("DONE.", 10, *cy, 0xFFFFFF);
+        *cy += 14;
     }
     else if (strcmp(cmd, "REBOOT")) {
         outb(0x64, 0xFE);

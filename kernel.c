@@ -87,7 +87,7 @@ void idt_install() {
 }
 
 // tu użyłem gemini bo mi się nie chciało
-unsigned char font8x10_basic[36][10] = {
+unsigned char font8x10_basic[59][10] = {
     {0x18, 0x3C, 0x66, 0x66, 0x7E, 0x66, 0x66, 0x66, 0x66, 0x00}, // A - cleaner bar
     {0x7C, 0x66, 0x66, 0x7C, 0x66, 0x66, 0x66, 0x66, 0x7C, 0x00}, // B - better symmetry
     {0x3C, 0x66, 0x60, 0x60, 0x60, 0x60, 0x60, 0x66, 0x3C, 0x00}, // C
@@ -123,7 +123,15 @@ unsigned char font8x10_basic[36][10] = {
     {0x1C, 0x30, 0x60, 0x7C, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00}, // 6
     {0x7E, 0x06, 0x06, 0x0C, 0x18, 0x18, 0x18, 0x18, 0x18, 0x00}, // 7
     {0x3C, 0x66, 0x66, 0x3C, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00}, // 8
-    {0x3C, 0x66, 0x66, 0x66, 0x3E, 0x06, 0x06, 0x0C, 0x38, 0x00}  // 9
+    {0x3C, 0x66, 0x66, 0x66, 0x3E, 0x06, 0x06, 0x0C, 0x38, 0x00},  // 9
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00}, // . (Kropka) - indeks 36
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x30}, // , (Przecinek) - indeks 37
+    {0x06, 0x0C, 0x18, 0x30, 0x60, 0x30, 0x18, 0x0C, 0x06, 0x00}, // / (RSlash) - indeks 38
+    {0x60, 0x30, 0x18, 0x0C, 0x06, 0x0C, 0x18, 0x30, 0x60, 0x00}, // \ (LSlash) - indeks 39
+    {0x00, 0x00, 0x00, 0x00, 0x7E, 0x00, 0x00, 0x00, 0x00, 0x00}, // - (Myślnik) - indeks 40
+    {0x0C, 0x18, 0x30, 0x30, 0x30, 0x30, 0x30, 0x18, 0x0C, 0x00}, // ( (Nawias L) - indeks 41
+    {0x30, 0x18, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x18, 0x30, 0x00}, // ) (Nawias R) - indeks 42
+    {0x00, 0x18, 0x18, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00},
 };
 
 //tu tueż
@@ -197,6 +205,24 @@ void kprint_char_gfx(char c, int x, int y, int color) {
     else if (c >= '0' && c <= '9') {
         draw_char(x, y, font8x10_basic[26 + (c - '0')], color);
     }
+    // Obsługa znaków specjalnych
+    else {
+        int index = -1;
+        switch(c) {
+            case '.':  index = 36; break;
+            case ',':  index = 37; break;
+            case '/':  index = 38; break;
+            case '\\': index = 39; break;
+            case '-':  index = 40; break;
+            case '(':  index = 41; break;
+            case ')':  index = 42; break;
+            case ':':  index = 43; break;
+        }
+
+        if (index != -1) {
+            draw_char(x, y, font8x10_basic[index], color);
+        }
+    }
 }
 
 void kprint_str_gfx(char* str, int x_start, int y_start, int color) {
@@ -223,7 +249,7 @@ void kprint_str_gfx(char* str, int x_start, int y_start, int color) {
         }
 
         // wraparound
-        if (current_x > 1000) { 
+        if (current_x > SCREEN_WIDTH - 20) { 
             current_x = x_start;
             current_y += 10;
         }
@@ -360,7 +386,7 @@ void dump_sector(unsigned short* buffer, int* cy) {
         }
         *cy += 12;
         
-        if (*cy > 700) break;
+        if (*cy > (SCREEN_HEIGHT - 20)) break;
     }
 }
 
@@ -412,7 +438,7 @@ void process_command(char* cmd, int* cy) {
         kprint_str_gfx(str, 10, *cy, 0xFF0000);
         *cy += 14;
     }
-    if (*cy > 750) {
+    if (*cy > (SCREEN_HEIGHT - 30)) {
         clear_screen_gfx();
         *cy = 10; 
     }
@@ -492,7 +518,7 @@ void keyboard_handler_c() {
         }
     }
     refresh_cursor(0xFFFFFF);
-    if (cursor_y > 750) {
+    if (cursor_y > (SCREEN_HEIGHT - 20)) {
         clear_screen_gfx();
         cursor_y = 10;
     }
@@ -514,8 +540,7 @@ void main() {
     
     __asm__ volatile("sti");
 
-    char text[] = "vos beta"; 
-    char ram[] = "RAM ";
+    char text[] = "vos 0.2 beta"; 
 
     unsigned short low_kb = *(volatile unsigned short*)0x7000;
     unsigned short high_64kb = *(volatile unsigned short*)0x7004;
@@ -525,9 +550,9 @@ void main() {
     itoa(total_mb, val_str);
 
     kprint_str_gfx(text, 10, 10, 0xFFFFFF);
-    kprint_str_gfx(ram, 10, 30, 0xFFFFFF);
-    kprint_str_gfx(val_str, 40, 30, 0xFFFFFF);
-    kprint_str_gfx("MB", 70, 30, 0xFFFFFF);
+    kprint_str_gfx("RAM: ", 10, 30, 0xFFFFFF);
+    kprint_str_gfx(val_str, 50, 30, 0xFFFFFF);
+    kprint_str_gfx("MB", 80, 30, 0xFFFFFF);
 
     while(1) {
             // aktualizuj i haltuj

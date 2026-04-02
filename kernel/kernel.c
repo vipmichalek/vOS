@@ -18,6 +18,9 @@ int cmd_idx = 0;
 unsigned int heap_current = 0x200000; 
 unsigned char* back_buffer;
 unsigned int next_rand = 1;
+volatile int input_ready = 0;   
+char* current_input_ptr = 0;    
+int input_max_len = 0;         
 
 // jednak zrobiłem
 void* kmalloc(unsigned int size) {
@@ -404,6 +407,24 @@ void dump_sector(unsigned short* buffer, int* cy) {
     }
 }
 
+void k_input(char* buffer, int max_len) {
+    input_ready = 0;
+    cmd_idx = 0;                  
+    current_input_ptr = buffer;   
+    input_max_len = max_len;
+    while (!input_ready) {
+        screen_update();
+        __asm__ volatile("hlt"); 
+    }
+
+    for(int i = 0; i < cmd_idx; i++) {
+        buffer[i] = cmd_buffer[i];
+    }
+    buffer[cmd_idx] = '\0';
+    
+    input_ready = 0;
+}
+
 void process_command(char* cmd, int* cy) {
     if (strcmp(cmd, "CLEAR")) {
         clear_screen_gfx();
@@ -430,9 +451,10 @@ void process_command(char* cmd, int* cy) {
         unsigned short* write_buf = (unsigned short*)kmalloc(512);
         // Wypełnij bufor testowymi danymi
         write_buf[0] = 0xADDE;
-        for(int i=1; i<255; i++) write_buf[i] = 0x0000; 
+        write_buf[1] = 0xEFBE;
+        for(int i=2; i<254; i++) write_buf[i] = 0x0000; 
 
-        kprint_str_gfx("WRITING TO LBA0...", 10, *cy, 0x00FFFF);
+        kprint_str_gfx("WRITING TO LBA0...", 10, *cy, 0xFFFFFF);
         ata_write_sector(0, write_buf);
         *cy += 14;
         kprint_str_gfx("DONE.", 10, *cy, 0xFFFFFF);
@@ -518,25 +540,29 @@ void keyboard_handler_c() {
     if (!(scancode & 0x80)) {
         char c = scancode_to_char(scancode);
 
-        if (c == '\b') { // Backspace
+        if (c == '\n') {
+            // Jeśli jesteśmy w trybie "INPUT", ustawiamy flagę gotowości
+            if (current_input_ptr != 0) {
+                input_ready = 1;
+                current_input_ptr = 0; // Czyścimy wskaźnik
+            } else {
+                // To co masz teraz - przetwarzanie komend
+                cmd_buffer[cmd_idx] = '\0';
+                cursor_x = 10;
+                cursor_y += 14;
+                if (cmd_idx > 0) process_command(cmd_buffer, &cursor_y);
+                cmd_idx = 0;
+            }
+        } 
+        else if (c == '\b') {
             if (cmd_idx > 0) {
                 cursor_x -= 8;
                 cmd_idx--;
                 cmd_buffer[cmd_idx] = '\0';
                 draw_rect(cursor_x, cursor_y, 8, 10, 0, 0, 0);
             }
-        } 
-        else if (c == '\n') { // Enter
-            cmd_buffer[cmd_idx] = '\0'; 
-            cursor_x = 10;
-            cursor_y += 14;
-            
-            if (cmd_idx > 0) {
-                process_command(cmd_buffer, &cursor_y);
-            }
-            cmd_idx = 0; 
         }
-        else if (c > 0 && cmd_idx < 63) { // znak
+        else if (c > 0 && cmd_idx < 63) {
             cmd_buffer[cmd_idx++] = c;
             char char_str[2] = {c, '\0'};
             kprint_str_gfx(char_str, cursor_x, cursor_y, 0xFFFFFF);
@@ -544,12 +570,7 @@ void keyboard_handler_c() {
         }
     }
     refresh_cursor(0xFFFFFF);
-    if (cursor_y > (SCREEN_HEIGHT - 20)) {
-        clear_screen_gfx();
-        cursor_y = 10;
-    }
 }
-
 void main() {
     back_buffer = (unsigned char*)kmalloc(SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL);
     //testy

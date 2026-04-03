@@ -2,13 +2,13 @@
 if not exist "tmp" mkdir tmp
 
 echo [1/5] assembler
-nasm kernel\kernel_entry.asm -f win32 -o tmp\kernel_entry.o
-nasm kernel\interrupts.asm -f win32 -o tmp\interrupts.o
+nasm kernel\kernel_entry.asm -f elf32 -o tmp\kernel_entry.o
+nasm kernel\interrupts.asm -f elf32 -o tmp\interrupts.o
 
 echo [2/5] c
-gcc -m32 -ffreestanding -Ikernel -c kernel\io.c -o tmp\io.o
-gcc -m32 -ffreestanding -Ikernel -c kernel\vga.c -o tmp\vga.o
-gcc -m32 -ffreestanding -Ikernel -c kernel\kernel.c -o tmp\kernel.o -fno-jump-tables
+gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\io.c -o tmp\io.o
+gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\vga.c -o tmp\vga.o
+gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\kernel.c -o tmp\kernel.o -fno-jump-tables
 
 echo [3/5] link
 ld -m i386pe -Ttext 0x1000 tmp\kernel_entry.o tmp\interrupts.o tmp\kernel.o tmp\vga.o tmp\io.o -o tmp\kernel.tmp

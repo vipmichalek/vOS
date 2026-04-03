@@ -7,11 +7,15 @@
 
 #define MAX_ROWS 25
 #define MAX_COLS 80
-#define VIDEO_ADDRESS 0xb8000
-#define WHITE_ON_BLACK 0x0F
-#define RED_ON_BLACK   0x0C
-#define GREEN_ON_BLACK 0x0A
-#define YELLOW_ON_BLACK 0x0E
+#define SCREEN_WIDTH  1280
+#define SCREEN_HEIGHT 720
+#define BYTES_PER_PIXEL 3
+#define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 
 //to jest do clear screen
 extern void memory_copy(unsigned char* source, unsigned char* dest, int nbytes);
+
+void screen_update() {
+    unsigned char* lfb = (unsigned char*)0xFD000000;
+    memory_copy(back_buffer, lfb, SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL);
+}

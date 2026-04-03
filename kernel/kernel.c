@@ -165,10 +165,6 @@ int strcmp(char* s1, char* s2) {
     return 0;
 }
 
-void screen_update() {
-    unsigned char* lfb = (unsigned char*)0xFD000000;
-    memory_copy(back_buffer, lfb, SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL);
-}
 
 void put_pixel(int x, int y, int r, int g, int b) {
     int offset = (y * SCREEN_PITCH) + (x * BYTES_PER_PIXEL);

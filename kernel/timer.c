@@ -25,3 +25,7 @@ void timer_handler_c() {
         refresh_cursor(0x000000); 
     }
 }
+
+unsigned long long int get_timer_tick() {
+    return timer_ticks;
+}

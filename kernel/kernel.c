@@ -5,7 +5,7 @@
 #define BYTES_PER_PIXEL 3
 #define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 
-void draw_color_test();
+// void draw_color_test();
 void idt_install();
 void pic_remap();
 extern void keyboard_handler_asm();
@@ -119,39 +119,6 @@ int strcmp(char* s1, char* s2) {
     return 0;
 }
 
-void kprint_str_gfx(char* str, int x_start, int y_start, int color) {
-    int current_x = x_start;
-    int current_y = y_start;
-    int i = 0;
-
-    while (str[i] != '\0') {
-        char c = str[i];
-
-        if (c == '\n') {
-            // POWRÓT KARETKI I NOWA LINIA
-            current_x = x_start;  
-            current_y += 10;      
-        } 
-        else if (c == ' ') {
-            // SPACJA
-            current_x += 8;       // w prawo
-        } 
-        else {
-            // ZWYKŁY ZNAK
-            kprint_char_gfx(c, current_x, current_y, color);
-            current_x += 8;       
-        }
-
-        // wraparound
-        if (current_x > SCREEN_WIDTH - 20) { 
-            current_x = x_start;
-            current_y += 10;
-        }
-
-        i++;
-    }
-}
-
 void hex_to_str(unsigned char n, char* out) {
     const char hex_chars[] = "0123456789ABCDEF";
     out[0] = '0';
@@ -194,14 +161,6 @@ void dump_mem(unsigned int start_addr, int lines, int* cy) {
             ptr++;
         }
         *cy += 12;
-    }
-}
-
-void draw_rect(int start_x, int start_y, int width, int height, int r, int g, int b) {
-    for (int y = start_y; y < start_y + height; y++) {
-        for (int x = start_x; x < start_x + width; x++) {
-            put_pixel(x, y, r, g, b);
-        }
     }
 }
 
@@ -318,6 +277,7 @@ void k_input(char* buffer, int max_len) {
     input_ready = 0;
 }
 
+
 void process_command(char* cmd, int* cy) {
     if (strcmp(cmd, "CLEAR")) {
         clear_screen_gfx();
@@ -385,22 +345,6 @@ void process_command(char* cmd, int* cy) {
     }
 }
 
-void draw_color_test() {
-    int start_y = 100;
-    int bar_height = 50;
-    int spacing = 0;
-    //paski
-    for (int i = 0; i < 256; i++) {
-        draw_rect(100 + (i * 2), start_y, 2, bar_height, i, 0, 0);
-        draw_rect(100 + (i * 2), start_y + bar_height + spacing, 2, bar_height, 0, i, 0);
-        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 2, 2, bar_height, 0, 0, i);
-        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 3, 2, bar_height, i, i, 0);
-        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 4, 2, bar_height, 0, i, i);
-        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 5, 2, bar_height, i, 0, i);
-        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 6, 2, bar_height, i, i, i);
-    }
-}
-
 void itoa(unsigned int n, char* str) {
     int i;
     int len = 0;
@@ -464,6 +408,7 @@ void keyboard_handler_c() {
     }
     refresh_cursor(0xFFFFFF);
 }
+
 void main() {
     back_buffer = (unsigned char*)kmalloc(SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL);
     //testy

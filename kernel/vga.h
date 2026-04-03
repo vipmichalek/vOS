@@ -7,5 +7,8 @@ void screen_update();
 void put_pixel(int x, int y, int r, int g, int b);
 void draw_char(int x, int y, unsigned char font_chars[10], int color);
 void clear_screen_gfx();
-void kprint_char_gfx(char c, int x, int y, int color) ;
+void kprint_char_gfx(char c, int x, int y, int color);
+void kprint_str_gfx(char* str, int x_start, int y_start, int color);
+void draw_rect(int start_x, int start_y, int width, int height, int r, int g, int b);
+void draw_color_test();
 #endif

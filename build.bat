@@ -8,10 +8,11 @@ nasm kernel\interrupts.asm -f elf32 -o tmp\interrupts.o
 echo [2/5] c
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\io.c -o tmp\io.o
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\vga.c -o tmp\vga.o
+gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\idt.c -o tmp\idt.o
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\kernel.c -o tmp\kernel.o -fno-jump-tables
 
 echo [3/5] link
-ld -m i386pe -Ttext 0x1000 tmp\kernel_entry.o tmp\interrupts.o tmp\kernel.o tmp\vga.o tmp\io.o -o tmp\kernel.tmp
+ld -m i386pe -Ttext 0x1000 tmp\kernel_entry.o tmp\interrupts.o tmp\kernel.o tmp\vga.o tmp\io.o tmp\idt.o -o tmp\kernel.tmp
 
 echo [4/5] binarka
 objcopy -O binary tmp\kernel.tmp kernel.bin

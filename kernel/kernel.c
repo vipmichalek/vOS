@@ -1,5 +1,6 @@
 #include "vga.h"
 #include "io.h"
+
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 720
 #define BYTES_PER_PIXEL 3

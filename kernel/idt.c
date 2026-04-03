@@ -1,10 +1,13 @@
 #include "idt.h"
 #include "io.h"
+#include "vga.h"
 
 struct idt_entry idt[256];
 struct idt_ptr idtp;
 
+
 extern void keyboard_handler_asm();
+extern void timer_handler_asm();
 
 void pic_remap() {
     outb(0x20, 0x11); // Start initialization
@@ -15,7 +18,7 @@ void pic_remap() {
     outb(0xA1, 0x02); // Tell Slave its identity
     outb(0x21, 0x01); // 8086 mode
     outb(0xA1, 0x01);
-    outb(0x21, 0xFD); // 0xFD = 11111101 (Masks everything except IRQ1 - Keyboard)
+    outb(0x21, 0xFC); // 0xFD = 11111101 (Masks everything except IRQ1 - Keyboard)
     outb(0xA1, 0xFF); // Mask all slave interrupts
 }
 
@@ -32,8 +35,8 @@ void idt_install() {
     idtp.base = (unsigned int)&idt;
     
     for(int i=0; i<256; i++) idt_set_gate(i, 0, 0, 0);
-
+    idt_set_gate(32, (unsigned long)timer_handler_asm, 0x08, 0x8E);
     idt_set_gate(33, (unsigned long)keyboard_handler_asm, 0x08, 0x8E);
 
-    __asm__ volatile("lidt (%0)" : : "r" (&idtp));
+    asm volatile("lidt (%0)" : : "r" (&idtp));
 }

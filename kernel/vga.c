@@ -13,6 +13,9 @@
 #define GREEN_ON_BLACK 0x0A
 #define YELLOW_ON_BLACK 0x0E
 
+//to jest do clear screen
+extern void memory_copy(unsigned char* source, unsigned char* dest, int nbytes);
+
 void update_cursor(int x, int y) {
     unsigned short pos = y * 80 + x;
     outb(0x3D4, 0x0F);

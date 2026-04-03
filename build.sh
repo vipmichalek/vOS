@@ -15,7 +15,7 @@ ld -m elf_i386 -Ttext 0x1000 tmp/kernel_entry.o tmp/interrupts.o tmp/kernel.o tm
 echo [4/5] binary
 objcopy -O binary tmp/kernel.tmp kernel.bin
 
-echo [5/5] finilizing
+echo [5/5] finalizing
 nasm boot.asm -f bin -o boot.bin
 cat boot.bin kernel.bin >os-image.bin
 qemu-img create -f raw disk.img 4g

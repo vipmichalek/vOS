@@ -27,6 +27,7 @@ OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 KERNEL_TMP := $(TMP_DIR)/kernel.tmp
 KERNEL_BIN := kernel.bin
 OS_IMAGE := os-image.bin
+DISK_IMG := disk.img
 
 # Default target
 all: run
@@ -61,10 +62,14 @@ $(OS_IMAGE): $(KERNEL_BIN) boot.asm
 	$(AS) boot.asm -f bin -o boot.bin
 	cat boot.bin $(KERNEL_BIN) > $(OS_IMAGE)
 
+# Only create disk.img if it doesn't exist
+$(DISK_IMG):
+	@echo "[CREATE DISK]"
+	qemu-img create -f raw $(DISK_IMG) 4g
+
 # Run in QEMU
-run: $(OS_IMAGE)
+run: $(OS_IMAGE) $(DISK_IMG)
 	@echo "[RUN]"
-	qemu-img create -f raw disk.img 4g || true
 	qemu-system-i386 \
 		-drive format=raw,file=$(OS_IMAGE),index=0,if=floppy \
 		-drive format=raw,file=disk.img,index=0,if=ide \

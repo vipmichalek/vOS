@@ -1,64 +1,186 @@
 #include "vga.h"
 #include "io.h"
 
-// I TAK NIC Z TEGO NIE JEST UŻYWANE BO PRZESZEDŁEM NA TRYB GRAFICZNY
-
 // stałe
 
 #define MAX_ROWS 25
 #define MAX_COLS 80
-#define VIDEO_ADDRESS 0xb8000
-#define WHITE_ON_BLACK 0x0F
-#define RED_ON_BLACK   0x0C
-#define GREEN_ON_BLACK 0x0A
-#define YELLOW_ON_BLACK 0x0E
+#define SCREEN_WIDTH  1280
+#define SCREEN_HEIGHT 720
+#define BYTES_PER_PIXEL 3
+#define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 
-void update_cursor(int x, int y) {
-    unsigned short pos = y * 80 + x;
-    outb(0x3D4, 0x0F);
-    outb(0x3D5, (unsigned char) (pos & 0xFF));
-    outb(0x3D4, 0x0E);
-    outb(0x3D5, (unsigned char) ((pos >> 8) & 0xFF));
+//to jest do clear screen
+extern void memory_copy(unsigned char* source, unsigned char* dest, int nbytes);
+
+// FONT
+// NIE RUSZAĆ
+unsigned char font8x10_basic[59][10] = {
+    {0x18, 0x3C, 0x66, 0x66, 0x7E, 0x66, 0x66, 0x66, 0x66, 0x00}, // A - cleaner bar
+    {0x7C, 0x66, 0x66, 0x7C, 0x66, 0x66, 0x66, 0x66, 0x7C, 0x00}, // B - better symmetry
+    {0x3C, 0x66, 0x60, 0x60, 0x60, 0x60, 0x60, 0x66, 0x3C, 0x00}, // C
+    {0x78, 0x6C, 0x66, 0x66, 0x66, 0x66, 0x66, 0x6C, 0x78, 0x00}, // D
+    {0x7E, 0x60, 0x60, 0x7C, 0x60, 0x60, 0x60, 0x60, 0x7E, 0x00}, // E - fixed middle bar
+    {0x7E, 0x60, 0x60, 0x7C, 0x60, 0x60, 0x60, 0x60, 0x60, 0x00}, // F
+    {0x3C, 0x66, 0x60, 0x60, 0x6E, 0x66, 0x66, 0x66, 0x3E, 0x00}, // G
+    {0x66, 0x66, 0x66, 0x66, 0x7E, 0x66, 0x66, 0x66, 0x66, 0x00}, // H
+    {0x3C, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x3C, 0x00}, // I
+    {0x1E, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x6C, 0x38, 0x00}, // J
+    {0x66, 0x6C, 0x78, 0x70, 0x60, 0x70, 0x78, 0x6C, 0x66, 0x00}, // K
+    {0x60, 0x60, 0x60, 0x60, 0x60, 0x60, 0x60, 0x66, 0x7E, 0x00}, // L
+    {0x63, 0x77, 0x7F, 0x6B, 0x63, 0x63, 0x63, 0x63, 0x63, 0x00}, // M
+    {0x66, 0x76, 0x7E, 0x7E, 0x7E, 0x6E, 0x66, 0x66, 0x66, 0x00}, // N
+    {0x3C, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00}, // O
+    {0x7C, 0x66, 0x66, 0x66, 0x7C, 0x60, 0x60, 0x60, 0x60, 0x00}, // P
+    {0x3C, 0x66, 0x66, 0x66, 0x66, 0x66, 0x6E, 0x3C, 0x06, 0x07}, // Q - fixed tail
+    {0x7C, 0x66, 0x66, 0x66, 0x7C, 0x78, 0x6C, 0x66, 0x66, 0x00}, // R
+    {0x3C, 0x66, 0x60, 0x3C, 0x06, 0x06, 0x66, 0x66, 0x3C, 0x00}, // S - smoother curves
+    {0x7E, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x00}, // T
+    {0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00}, // U
+    {0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x18, 0x18, 0x00}, // V
+    {0x63, 0x63, 0x63, 0x63, 0x6B, 0x7F, 0x77, 0x63, 0x63, 0x00}, // W
+    {0x66, 0x66, 0x3C, 0x18, 0x18, 0x3C, 0x66, 0x66, 0x66, 0x00}, // X
+    {0x66, 0x66, 0x66, 0x3C, 0x18, 0x18, 0x18, 0x18, 0x18, 0x00}, // Y
+    {0x7E, 0x06, 0x0C, 0x18, 0x30, 0x60, 0x40, 0x40, 0x7E, 0x00}, // Z
+    {0x3C, 0x66, 0x66, 0x6E, 0x76, 0x66, 0x66, 0x66, 0x3C, 0x00}, // 0
+    {0x18, 0x38, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x3C, 0x00}, // 1
+    {0x3C, 0x66, 0x06, 0x06, 0x3C, 0x60, 0x60, 0x66, 0x7E, 0x00}, // 2 - clearer base
+    {0x3C, 0x66, 0x06, 0x06, 0x1C, 0x06, 0x06, 0x66, 0x3C, 0x00}, // 3
+    {0x06, 0x0E, 0x1E, 0x36, 0x66, 0x7F, 0x06, 0x06, 0x06, 0x00}, // 4
+    {0x7E, 0x60, 0x60, 0x7C, 0x06, 0x06, 0x06, 0x66, 0x3C, 0x00}, // 5
+    {0x1C, 0x30, 0x60, 0x7C, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00}, // 6
+    {0x7E, 0x06, 0x06, 0x0C, 0x18, 0x18, 0x18, 0x18, 0x18, 0x00}, // 7
+    {0x3C, 0x66, 0x66, 0x3C, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00}, // 8
+    {0x3C, 0x66, 0x66, 0x66, 0x3E, 0x06, 0x06, 0x0C, 0x38, 0x00},  // 9
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00}, // . (Kropka) - indeks 36
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x30}, // , (Przecinek) - indeks 37
+    {0x06, 0x0C, 0x18, 0x30, 0x60, 0x30, 0x18, 0x0C, 0x06, 0x00}, // / (RSlash) - indeks 38
+    {0x60, 0x30, 0x18, 0x0C, 0x06, 0x0C, 0x18, 0x30, 0x60, 0x00}, // \ (LSlash) - indeks 39
+    {0x00, 0x00, 0x00, 0x00, 0x7E, 0x00, 0x00, 0x00, 0x00, 0x00}, // - (Myślnik) - indeks 40
+    {0x0C, 0x18, 0x30, 0x30, 0x30, 0x30, 0x30, 0x18, 0x0C, 0x00}, // ( (Nawias L) - indeks 41
+    {0x30, 0x18, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x18, 0x30, 0x00}, // ) (Nawias R) - indeks 42
+    {0x00, 0x18, 0x18, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00},
+};
+
+void screen_update() {
+    unsigned char* lfb = (unsigned char*)0xFD000000;
+    memory_copy(back_buffer, lfb, SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL);
 }
 
-void clear_screen() {
-    char* video_memory = (char*) VIDEO_ADDRESS;
-    for (int i = 0; i < MAX_COLS * MAX_ROWS; i++) {
-        video_memory[i * 2] = ' '; 
-        video_memory[i * 2 + 1] = WHITE_ON_BLACK; 
-    update_cursor(0, 0);
-    }
-}
-void kprint_at(char* message, int col, int row, unsigned char color) {
-    char* video_memory = (char*) VIDEO_ADDRESS;
-    int offset = (row * MAX_COLS + col) * 2;
-    int i = 0;
-
-    while (message[i] != '\0') {
-        if (offset >= MAX_ROWS * MAX_COLS * 2) break;
-
-        video_memory[offset] = message[i];
-        video_memory[offset + 1] = color;     
-        
-        offset += 2;
-        i++;
-    }
+void put_pixel(int x, int y, int r, int g, int b) {
+    int offset = (y * SCREEN_PITCH) + (x * BYTES_PER_PIXEL);
     
-    update_cursor(col + i, row);
+    back_buffer[offset]     = b; 
+    back_buffer[offset + 1] = g; 
+    back_buffer[offset + 2] = r; 
 }
 
-void scroll() {
-    char* video_memory = (char*) VIDEO_ADDRESS;
-
-    for (int i = 1; i < MAX_ROWS; i++) {
-        for (int j = 0; j < MAX_COLS * 2; j++) {
-            video_memory[((i - 1) * MAX_COLS * 2) + j] = video_memory[(i * MAX_COLS * 2) + j];
+void draw_char(int x, int y, unsigned char font_chars[10], int color) {
+    for (int i = 0; i < 10; i++) {     
+        for (int j = 0; j < 8; j++) {
+            if (font_chars[i] & (1 << (7 - j))) {
+                int r = (color >> 16) & 0xFF;
+                int g = (color >> 8) & 0xFF;
+                int b = color & 0xFF;
+                put_pixel(x + j, y + i, r, g, b);
+            }
         }
     }
+}
 
-    int last_line_offset = (MAX_ROWS - 1) * MAX_COLS * 2;
-    for (int j = 0; j < MAX_COLS; j++) {
-        video_memory[last_line_offset + (j * 2)] = ' ';
-        video_memory[last_line_offset + (j * 2) + 1] = WHITE_ON_BLACK;
+void clear_screen_gfx() {
+    for(int i = 0; i < (SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL); i++) {
+        back_buffer[i] = 0;
     }
+}
+
+void kprint_char_gfx(char c, int x, int y, int color) {
+    if (c >= 'a' && c <= 'z') c -= 32;
+
+    if (c >= 'A' && c <= 'Z') {
+        draw_char(x, y, font8x10_basic[c - 'A'], color);
+    } 
+    else if (c >= '0' && c <= '9') {
+        draw_char(x, y, font8x10_basic[26 + (c - '0')], color);
+    }
+    // Obsługa znaków specjalnych
+    else {
+        int index = -1;
+        switch(c) {
+            case '.':  index = 36; break;
+            case ',':  index = 37; break;
+            case '/':  index = 38; break;
+            case '\\': index = 39; break;
+            case '-':  index = 40; break;
+            case '(':  index = 41; break;
+            case ')':  index = 42; break;
+            case ':':  index = 43; break;
+        }
+
+        if (index != -1) {
+            draw_char(x, y, font8x10_basic[index], color);
+        }
+    }
+}
+
+void kprint_str_gfx(char* str, int x_start, int y_start, int color) {
+    int current_x = x_start;
+    int current_y = y_start;
+    int i = 0;
+
+    while (str[i] != '\0') {
+        char c = str[i];
+
+        if (c == '\n') {
+            // POWRÓT KARETKI I NOWA LINIA
+            current_x = x_start;  
+            current_y += 10;      
+        } 
+        else if (c == ' ') {
+            // SPACJA
+            current_x += 8;       // w prawo
+        } 
+        else {
+            // ZWYKŁY ZNAK
+            kprint_char_gfx(c, current_x, current_y, color);
+            current_x += 8;       
+        }
+
+        // wraparound
+        if (current_x > SCREEN_WIDTH - 20) { 
+            current_x = x_start;
+            current_y += 10;
+        }
+
+        i++;
+    }
+}
+
+void draw_rect(int start_x, int start_y, int width, int height, int r, int g, int b) {
+    for (int y = start_y; y < start_y + height; y++) {
+        for (int x = start_x; x < start_x + width; x++) {
+            put_pixel(x, y, r, g, b);
+        }
+    }
+}
+
+void draw_color_test() {
+    int start_y = 100;
+    int bar_height = 50;
+    int spacing = 0;
+    //paski
+    for (int i = 0; i < 256; i++) {
+        draw_rect(100 + (i * 2), start_y, 2, bar_height, i, 0, 0);
+        draw_rect(100 + (i * 2), start_y + bar_height + spacing, 2, bar_height, 0, i, 0);
+        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 2, 2, bar_height, 0, 0, i);
+        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 3, 2, bar_height, i, i, 0);
+        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 4, 2, bar_height, 0, i, i);
+        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 5, 2, bar_height, i, 0, i);
+        draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 6, 2, bar_height, i, i, i);
+    }
+}
+
+// mógłbym po prostu wywoływać normalnie draw rect ale mi się nie chce
+void draw_cursor(int x, int y, int r, int g, int b) {
+    draw_rect(x, y+10, 8, 2, r, g, b);
 }

@@ -262,14 +262,6 @@ void keyboard_handler_c() {
 
 void main() {
     back_buffer = (unsigned char*)kmalloc(SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL);
-    //testy
-    unsigned char* test_ptr = (unsigned char*)0x500000;
-    test_ptr[0] = 0xDE;
-    test_ptr[1] = 0xAD;
-    test_ptr[2] = 0xBE;
-    test_ptr[3] = 0xEF;
-    test_ptr[4] = 0xCA;
-    test_ptr[5] = 0xFE;
     clear_screen_gfx();
     idt_install();      
     pic_remap();       
@@ -283,7 +275,7 @@ void main() {
     char val_str[12];
     itoa(total_mb, val_str);
 
-    kprint_str_gfx("vos 0.2 beta", 10, 10, 0xFFFFFF);
+    kprint_str_gfx("vos 0.3 beta ---", 10, 10, 0xFFFFFF);
     kprint_str_gfx("RAM: ", 10, 30, 0xFFFFFF);
     kprint_str_gfx(val_str, 50, 30, 0xFFFFFF);
     kprint_str_gfx("MB", 80, 30, 0xFFFFFF);

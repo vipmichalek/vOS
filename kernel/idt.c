@@ -51,4 +51,11 @@ void timer_install(unsigned int frequency) {
 void timer_handler_c() {
     timer_ticks++;
     outb(0x20, 0x20); 
+    // TO WYJEBAĆ
+    // TO JEST TEST TIMERA
+    if (timer_ticks % 100 == 0) {
+        draw_rect(0, 0, 5, 5, 0, 255, 0); 
+    } else if (timer_ticks % 100 == 50) {
+        draw_rect(0, 0, 5, 5, 0, 0, 0);
+    }
 }

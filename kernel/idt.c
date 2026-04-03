@@ -4,6 +4,8 @@
 struct idt_entry idt[256];
 struct idt_ptr idtp;
 
+volatile unsigned long timer_ticks = 0;
+
 extern void keyboard_handler_asm();
 extern void timer_handler_asm();
 void pic_remap() {
@@ -32,8 +34,21 @@ void idt_install() {
     idtp.base = (unsigned int)&idt;
     
     for(int i=0; i<256; i++) idt_set_gate(i, 0, 0, 0);
-
+    idt_set_gate(32, (unsigned long)timer_handler_asm, 0x08, 0x8E);
     idt_set_gate(33, (unsigned long)keyboard_handler_asm, 0x08, 0x8E);
 
     asm volatile("lidt (%0)" : : "r" (&idtp));
+}
+
+void timer_install(unsigned int frequency) {
+    unsigned int divisor = 1193180 / frequency;
+
+    outb(0x43, 0x36);             
+    outb(0x40, (unsigned char)(divisor & 0xFF));   
+    outb(0x40, (unsigned char)((divisor >> 8) & 0xFF));
+}
+
+void timer_handler_c() {
+    timer_ticks++;
+    outb(0x20, 0x20); 
 }

@@ -164,10 +164,6 @@ void dump_mem(unsigned int start_addr, int lines, int* cy) {
     }
 }
 
-void draw_cursor(int x, int y, int r, int g, int b) {
-    draw_rect(x, y+10, 8, 2, r, g, b);
-}
-
 void ata_identify(int* cy) {
     unsigned short info[256];
     char model[41]; // 40 chars + null terminator
@@ -277,7 +273,6 @@ void k_input(char* buffer, int max_len) {
     input_ready = 0;
 }
 
-
 void process_command(char* cmd, int* cy) {
     if (strcmp(cmd, "CLEAR")) {
         clear_screen_gfx();
@@ -366,6 +361,7 @@ void itoa(unsigned int n, char* str) {
     }
 }
 
+//to bym wywalił do vga.c ale zostawię
 void refresh_cursor(int color) {
     draw_cursor(cursor_x, cursor_y, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
 }

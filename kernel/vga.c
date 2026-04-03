@@ -179,3 +179,8 @@ void draw_color_test() {
         draw_rect(100 + (i * 2), start_y + (bar_height + spacing) * 6, 2, bar_height, i, i, i);
     }
 }
+
+// mógłbym po prostu wywoływać normalnie draw rect ale mi się nie chce
+void draw_cursor(int x, int y, int r, int g, int b) {
+    draw_rect(x, y+10, 8, 2, r, g, b);
+}

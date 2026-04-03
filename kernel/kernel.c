@@ -192,7 +192,7 @@ void main() {
     idt_install();      
     pic_remap();       
     
-    __asm__ volatile("sti");
+    asm volatile("sti");
 
     unsigned short low_kb = *(volatile unsigned short*)0x7000;
     unsigned short high_64kb = *(volatile unsigned short*)0x7004;
@@ -209,7 +209,7 @@ void main() {
     while(1) {
             // aktualizuj i haltuj
             screen_update();
-            __asm__ volatile("hlt");
+            asm volatile("hlt");
     }
 }
 // tego nie ruszam bo jak tam tego nie ma to linkerowi odwala i się restartuje

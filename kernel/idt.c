@@ -5,7 +5,7 @@ struct idt_entry idt[256];
 struct idt_ptr idtp;
 
 extern void keyboard_handler_asm();
-
+extern void timer_handler_asm();
 void pic_remap() {
     outb(0x20, 0x11); // Start initialization
     outb(0xA0, 0x11);
@@ -15,7 +15,7 @@ void pic_remap() {
     outb(0xA1, 0x02); // Tell Slave its identity
     outb(0x21, 0x01); // 8086 mode
     outb(0xA1, 0x01);
-    outb(0x21, 0xFD); // 0xFD = 11111101 (Masks everything except IRQ1 - Keyboard)
+    outb(0x21, 0xFC); // 0xFD = 11111101 (Masks everything except IRQ1 - Keyboard)
     outb(0xA1, 0xFF); // Mask all slave interrupts
 }
 
@@ -35,5 +35,5 @@ void idt_install() {
 
     idt_set_gate(33, (unsigned long)keyboard_handler_asm, 0x08, 0x8E);
 
-    __asm__ volatile("lidt (%0)" : : "r" (&idtp));
+    asm volatile("lidt (%0)" : : "r" (&idtp));
 }

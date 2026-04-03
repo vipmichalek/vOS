@@ -2,6 +2,7 @@
 #include "io.h"
 #include "idt.h"
 #include "ata.h"
+#include "timer.h"
 #include "functions.h"
 
 #define SCREEN_WIDTH  1280
@@ -190,7 +191,8 @@ void main() {
     back_buffer = (unsigned char*)kmalloc(SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL);
     clear_screen_gfx();
     idt_install();      
-    pic_remap();       
+    pic_remap();
+    timer_install(100);
     
     asm volatile("sti");
 

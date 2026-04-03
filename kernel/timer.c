@@ -1,7 +1,10 @@
 #include "timer.h"
+#include "io.h"
+#include "vga.h"
 
 volatile unsigned long timer_ticks = 0;
 extern void timer_handler_asm();
+extern void refresh_cursor();
 
 void timer_install(unsigned int frequency) {
     unsigned int divisor = 1193180 / frequency;
@@ -16,9 +19,9 @@ void timer_handler_c() {
     outb(0x20, 0x20); 
     // TO WYJEBAĆ
     // TO JEST TEST TIMERA
-    if (timer_ticks % 10 == 0) {
-        draw_rect(0, 0, 5, 5, 0, 255, 0); 
-    } else if (timer_ticks % 10 == 5) {
-        draw_rect(0, 0, 5, 5, 0, 0, 0);
+    if (timer_ticks % 100 == 0) {
+        refresh_cursor(0xFFFFFF); 
+    } else if (timer_ticks % 100 == 50) {
+        refresh_cursor(0x000000); 
     }
 }

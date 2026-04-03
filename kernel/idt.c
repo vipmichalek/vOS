@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "io.h"
+#include "vga.h"
 
 struct idt_entry idt[256];
 struct idt_ptr idtp;
@@ -48,14 +49,15 @@ void timer_install(unsigned int frequency) {
     outb(0x40, (unsigned char)((divisor >> 8) & 0xFF));
 }
 
+
 void timer_handler_c() {
     timer_ticks++;
     outb(0x20, 0x20); 
     // TO WYJEBAĆ
     // TO JEST TEST TIMERA
-    if (timer_ticks % 100 == 0) {
+    if (timer_ticks % 10 == 0) {
         draw_rect(0, 0, 5, 5, 0, 255, 0); 
-    } else if (timer_ticks % 100 == 50) {
+    } else if (timer_ticks % 10 == 5) {
         draw_rect(0, 0, 5, 5, 0, 0, 0);
     }
 }

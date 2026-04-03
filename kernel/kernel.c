@@ -1,5 +1,6 @@
 #include "vga.h"
 #include "io.h"
+#include "idt.h"
 
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 720
@@ -7,8 +8,6 @@
 #define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 
 // void draw_color_test();
-void idt_install();
-void pic_remap();
 extern void keyboard_handler_asm();
 extern void memory_copy(unsigned char* source, unsigned char* dest, int nbytes);
 
@@ -39,56 +38,6 @@ int rand() {
     next_rand = next_rand * 1103515245 + 12345;
     return (unsigned int)(next_rand / 65536) % 32768;
 }
-
-struct idt_entry {
-    unsigned short base_low;
-    unsigned short selector;      
-    unsigned char  zero;          
-    unsigned char  flags;        
-    unsigned short base_high;
-} __attribute__((packed));
-
-struct idt_ptr {
-    unsigned short limit;
-    unsigned int   base;
-} __attribute__((packed));
-
-struct idt_entry idt[256];
-struct idt_ptr idtp;
-
-void pic_remap() {
-    outb(0x20, 0x11); // Start initialization
-    outb(0xA0, 0x11);
-    outb(0x21, 0x20); // Master PIC vector offset (0x20)
-    outb(0xA1, 0x28); // Slave PIC vector offset (0x28)
-    outb(0x21, 0x04); // Tell Master there is a Slave at IRQ2
-    outb(0xA1, 0x02); // Tell Slave its identity
-    outb(0x21, 0x01); // 8086 mode
-    outb(0xA1, 0x01);
-    outb(0x21, 0xFD); // 0xFD = 11111101 (Masks everything except IRQ1 - Keyboard)
-    outb(0xA1, 0xFF); // Mask all slave interrupts
-}
-
-void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags) {
-    idt[num].base_low = (base & 0xFFFF);
-    idt[num].base_high = (base >> 16) & 0xFFFF;
-    idt[num].selector = sel;
-    idt[num].zero = 0;
-    idt[num].flags = flags;
-}
-
-void idt_install() {
-    idtp.limit = (sizeof(struct idt_entry) * 256) - 1;
-    idtp.base = (unsigned int)&idt;
-    
-    for(int i=0; i<256; i++) idt_set_gate(i, 0, 0, 0);
-
-    idt_set_gate(33, (unsigned long)keyboard_handler_asm, 0x08, 0x8E);
-
-    __asm__ volatile("lidt (%0)" : : "r" (&idtp));
-}
-
-// tu użyłem gemini bo mi się nie chciało
 
 //tu tueż
 char scancode_to_char(unsigned char scancode) {

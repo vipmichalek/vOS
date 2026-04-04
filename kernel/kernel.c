@@ -208,6 +208,18 @@ void main() {
     kprint_str_gfx("RAM: ", 10, 30, 0xFFFFFF);
     kprint_str_gfx(val_str, 50, 30, 0xFFFFFF);
     kprint_str_gfx("MB", 80, 30, 0xFFFFFF);
+    
+    for (int k = 0; k < 7; k++) {
+        switch(k) {
+            case 0: draw_rect(150+10*k, 10, 10, 10, 255, 0, 0); break;
+            case 1: draw_rect(150+10*k, 10, 10, 10, 0, 255, 0); break;
+            case 2: draw_rect(150+10*k, 10, 10, 10, 0, 0, 255); break;
+            case 3: draw_rect(150+10*k, 10, 10, 10, 255, 255, 0); break;
+            case 4: draw_rect(150+10*k, 10, 10, 10, 0, 255, 255); break;
+            case 5: draw_rect(150+10*k, 10, 10, 10, 255, 0, 255); break;
+            case 6: draw_rect(150+10*k, 10, 10, 10, 255, 255, 255); break;
+        }
+    }
 
     while(1) {
             // aktualizuj i haltuj

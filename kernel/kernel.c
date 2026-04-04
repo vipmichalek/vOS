@@ -143,7 +143,8 @@ void process_command(char* cmd, int* cy) {
     }
 }
 
-//to bym wywalił do vga.c ale zostawię
+// to bym wywalił do vga.c bo to funkcja czysto wideo
+// tylko że ta "funkcja czysto wideo" opiera się na liniach 17 i 18 a one są tutaj i mi się nie chce robić externów
 void refresh_cursor(int color) {
     draw_cursor(cursor_x, cursor_y, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
 }

@@ -4,6 +4,7 @@
 #include "ata.h"
 #include "timer.h"
 #include "functions.h"
+#include "rtc.h"
 
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 720
@@ -131,6 +132,24 @@ void process_command(char* cmd, int* cy) {
         kprint_str_gfx(msg, 10, *cy, 0xFFFFFF);
         *cy += 14;     
         dump_mem((unsigned int)0x5000000, 10, cy);
+    }
+    else if (strcmp(cmd, "GETRTC")) {
+        int time_zone = 2;
+
+        char hour[3];
+        char min[3];
+        char sec[3];
+        int h, m, s; 
+        read_rtc(&s, &m, &h); // ADRESY
+        itoa(h+time_zone, hour);
+        itoa(m, min);
+        itoa(s, sec);
+        kprint_str_gfx(hour, cursor_x, cursor_y, 0xFFFFFF);
+        kprint_str_gfx(":", cursor_x+20, cursor_y, 0xFFFFFF);
+        kprint_str_gfx(min, cursor_x+30, cursor_y, 0xFFFFFF);
+        kprint_str_gfx(":", cursor_x+50, cursor_y, 0xFFFFFF);
+        kprint_str_gfx(sec, cursor_x+60, cursor_y, 0xFFFFFF);
+        cursor_y +=14;
     }
     else {
         char str[] = "UNKNOWN CMD";

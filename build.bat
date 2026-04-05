@@ -10,12 +10,13 @@ gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\io.c -o tmp\i
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\vga.c -o tmp\vga.o
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\idt.c -o tmp\idt.o
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\ata.c -o tmp\ata.o
+gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\rtc.c -o tmp\rtc.o
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\timer.c -o tmp\timer.o
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\functions.c -o tmp\functions.o
 gcc -m32 -ffreestanding -fno-leading-underscore -Ikernel -c kernel\kernel.c -o tmp\kernel.o -fno-jump-tables
 
 echo [3/5] link
-ld -m i386pe -Ttext 0x1000 tmp\kernel_entry.o tmp\interrupts.o tmp\kernel.o tmp\vga.o tmp\io.o tmp\idt.o tmp\functions.o tmp\ata.o tmp\timer.o -o tmp\kernel.tmp
+ld -m i386pe -Ttext 0x1000 tmp\kernel_entry.o tmp\interrupts.o tmp\kernel.o tmp\vga.o tmp\io.o tmp\idt.o tmp\functions.o tmp\ata.o tmp\timer.o tmp\rtc.o -o tmp\kernel.tmp
 
 echo [4/5] binarka
 objcopy -O binary tmp\kernel.tmp kernel.bin

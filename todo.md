@@ -1,1 +1,1 @@
-dodać idt.c do build.sh bo mi się nie chce tego robić
+!!! NAPRAWIĆ GETRTC ŻEBY ZERA WIODĄCE BO NIE MA A MUSI BYĆ

@@ -140,6 +140,8 @@ void process_command(char* cmd, int* cy) {
         char min[3];
         char sec[3];
         int h, m, s; 
+
+        int actual_h = h + time_zone;
         read_rtc(&s, &m, &h); // ADRESY
         itoa(h+time_zone, hour);
         itoa(m, min);

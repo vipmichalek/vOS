@@ -14,7 +14,7 @@ ASFLAGS := -f elf32
 LDFLAGS := -m elf_i386 -Ttext 0x1000
 
 # Files (ADD NEW FILES HERE 👇)
-C_SOURCES := io.c vga.c kernel.c ata.c functions.c idt.c timer.c
+C_SOURCES := io.c vga.c kernel.c ata.c functions.c idt.c timer.c rtc.c
 ASM_SOURCES := kernel_entry.asm interrupts.asm
 
 # Auto-generated object lists

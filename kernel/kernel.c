@@ -8,7 +8,7 @@
 #include "icons.h"
 
 #define SCREEN_WIDTH  1280
-#define SCREEN_HEIGHT 960
+#define SCREEN_HEIGHT 1000
 #define BYTES_PER_PIXEL 3
 #define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 // void draw_color_test();
@@ -84,15 +84,12 @@ void k_input(char* buffer, int max_len) {
     input_ready = 0;
 }
 
-void draw_window(int width, int height, int bar_height, int x, int y, char* text) {
-    draw_rect(x, y, width+2, height, 255, 255, 255);
-    draw_rect(x+1, y+21, width, height-bar_height-2, 0, 0, 0);
-    // rysuj jakiś tam gradient
-    for (int i = 0; i < bar_height+1; i++) {
-        draw_rect(x+1, y+1+i, width, 1, 100+4*i, 100+4*i, 100+4*i);
-    }
-    // draw_rect(x+1, y+22, width, 1, 255, 255, 255);
-    kprint_str_gfx(text, x+3, y+7, 0xFFFFFF);
+void draw_desktop() {
+    fill_screen_fast(0, 85, 170);
+    draw_window(800, 600, 20, 29, 29, "Program manager");
+    // draw_icon(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 24, 24, fdicon);
+    // draw_icon((SCREEN_WIDTH/2)+30, SCREEN_HEIGHT/2, 24, 24, folder_icon);
+
 }
 
 void process_command(char* cmd, int* cy) {
@@ -153,11 +150,7 @@ void process_command(char* cmd, int* cy) {
     }
     else if (strcmp(cmd, "WIN")) {
         window_running = 1;
-        fill_screen_fast(0, 85, 170);
-        draw_icon(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 24, 24, fdicon);
-        draw_icon((SCREEN_WIDTH/2)+30, SCREEN_HEIGHT/2, 24, 24, folder_icon);
-        
-        draw_window(800, 600, 20, 29, 29, "Program manager");
+        draw_desktop();
     }
     else if (strcmp(cmd, "GETRTC")) {
         int time_zone = 2;
@@ -198,18 +191,31 @@ void refresh_cursor(int color) {
 
 void keyboard_handler_c() {
     unsigned char scancode = inb(0x60);
+
+    // obsługa esc
+    if (scancode == 0x01) { 
+        window_running = 0;
+        clear_screen_gfx();
+        cursor_x = 10;
+        cursor_y = 10;
+        cmd_idx = 0;
+        return; 
+    }
+
+    // BLOKUJ INNE JAK JEST TEN CAŁY NIBY GUI
+    if (window_running) {
+        return; 
+    }
     refresh_cursor(0x000000); 
 
     if (!(scancode & 0x80)) {
         char c = scancode_to_char(scancode);
 
         if (c == '\n') {
-            // Jeśli jesteśmy w trybie "INPUT", ustawiamy flagę gotowości
             if (current_input_ptr != 0) {
                 input_ready = 1;
-                current_input_ptr = 0; // Czyścimy wskaźnik
+                current_input_ptr = 0;
             } else {
-                // To co masz teraz - przetwarzanie komend
                 cmd_buffer[cmd_idx] = '\0';
                 cursor_x = 10;
                 cursor_y += 14;
@@ -231,13 +237,6 @@ void keyboard_handler_c() {
             kprint_str_gfx(char_str, cursor_x, cursor_y, 0xFFFFFF);
             cursor_x += 8;
         }
-    }
-    if (scancode == 0x01) { // ESC pressed
-        window_running = 0;
-        clear_screen_gfx();
-        cursor_x = 10;
-        cursor_y = 10;
-        return;
     }
     refresh_cursor(0xFFFFFF);
 }

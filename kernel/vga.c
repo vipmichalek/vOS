@@ -6,7 +6,7 @@
 #define MAX_ROWS 25
 #define MAX_COLS 80
 #define SCREEN_WIDTH  1280
-#define SCREEN_HEIGHT 960
+#define SCREEN_HEIGHT 1000
 #define BYTES_PER_PIXEL 3
 #define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 
@@ -208,4 +208,15 @@ void draw_color_test() {
 // mógłbym po prostu wywoływać normalnie draw rect ale mi się nie chce
 void draw_cursor(int x, int y, int r, int g, int b) {
     draw_rect(x, y+10, 8, 2, r, g, b);
+}
+
+void draw_window(int width, int height, int bar_height, int x, int y, char* text) {
+    draw_rect(x, y, width+2, height, 255, 255, 255);
+    draw_rect(x+1, y+21, width, height-bar_height-2, 0, 0, 0);
+    // rysuj jakiś tam gradient
+    for (int i = 0; i < bar_height+1; i++) {
+        draw_rect(x+1, y+1+i, width, 1, 80+5*i, 80+5*i, 80+5*i);
+    }
+    // draw_rect(x+1, y+22, width, 1, 255, 255, 255);
+    kprint_str_gfx(text, x+3, y+7, 0xFFFFFF);
 }

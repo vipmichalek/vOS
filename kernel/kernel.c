@@ -24,6 +24,8 @@ volatile int input_ready = 0;
 char* current_input_ptr = 0;    
 int input_max_len = 0;         
 
+int window_running = 0;
+
 void format_two_digits(int val, char* buf) {
     buf[0] = (val / 10) + '0'; // Cyfra dziesiątek
     buf[1] = (val % 10) + '0'; // Cyfra jedności
@@ -82,6 +84,17 @@ void k_input(char* buffer, int max_len) {
     input_ready = 0;
 }
 
+void draw_window(int width, int height, int bar_height, int x, int y, char* text) {
+    draw_rect(x, y, width+2, height, 255, 255, 255);
+    draw_rect(x+1, y+21, width, height-bar_height-2, 0, 0, 0);
+    // rysuj jakiś tam gradient
+    for (int i = 0; i < bar_height+1; i++) {
+        draw_rect(x+1, y+1+i, width, 1, 100+4*i, 100+4*i, 100+4*i);
+    }
+    // draw_rect(x+1, y+22, width, 1, 255, 255, 255);
+    kprint_str_gfx(text, x+3, y+7, 0xFFFFFF);
+}
+
 void process_command(char* cmd, int* cy) {
     if (strcmp(cmd, "CLEAR")) {
         clear_screen_gfx();
@@ -138,23 +151,13 @@ void process_command(char* cmd, int* cy) {
         *cy += 14;     
         dump_mem((unsigned int)0x5000000, 10, cy);
     }
-    else if (strcmp(cmd, "FILL")) {
-        int bar_width = 400;
-
-        int start_x = 29;
-        int start_y = 29;
-
+    else if (strcmp(cmd, "WIN")) {
+        window_running = 1;
         fill_screen_fast(0, 85, 170);
         draw_icon(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 24, 24, fdicon);
         draw_icon((SCREEN_WIDTH/2)+30, SCREEN_HEIGHT/2, 24, 24, folder_icon);
         
-        draw_rect(start_x, start_y, bar_width+2, 300, 255, 255, 255);
-        draw_rect(start_x+1, start_y+21, bar_width, 278, 0, 0, 0);
-        // rysuj jakiś tam gradient
-        for (int i = 0; i < 21; i++) {
-            draw_rect(start_x+1, start_y+1+i, bar_width, 1, 100+4*i, 100+4*i, 100+4*i);
-        }
-        kprint_str_gfx("Test window", start_x+3, start_y+7, 0xFFFFFF);
+        draw_window(800, 600, 20, 29, 29, "Program manager");
     }
     else if (strcmp(cmd, "GETRTC")) {
         int time_zone = 2;
@@ -228,6 +231,13 @@ void keyboard_handler_c() {
             kprint_str_gfx(char_str, cursor_x, cursor_y, 0xFFFFFF);
             cursor_x += 8;
         }
+    }
+    if (scancode == 0x01) { // ESC pressed
+        window_running = 0;
+        clear_screen_gfx();
+        cursor_x = 10;
+        cursor_y = 10;
+        return;
     }
     refresh_cursor(0xFFFFFF);
 }

@@ -213,10 +213,14 @@ void draw_cursor(int x, int y, int r, int g, int b) {
 void draw_window(int width, int height, int bar_height, int x, int y, char* text) {
     draw_rect(x, y, width+2, height, 255, 255, 255);
     draw_rect(x+1, y+21, width, height-bar_height-2, 0, 0, 0);
+    
     // rysuj jakiś tam gradient
     for (int i = 0; i < bar_height+1; i++) {
         draw_rect(x+1, y+1+i, width, 1, 80+5*i, 80+5*i, 80+5*i);
     }
+    draw_rect(x+1, y+1, width, 1, 195, 195, 195);
+    draw_rect(x+1, y+2, width, 1, 165, 165, 165);
+    draw_rect(x+1, y+3, width, 1, 135, 135, 135);
     // draw_rect(x+1, y+22, width, 1, 255, 255, 255);
     kprint_str_gfx(text, x+3, y+7, 0xFFFFFF);
 }

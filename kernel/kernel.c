@@ -24,6 +24,11 @@ volatile int input_ready = 0;
 char* current_input_ptr = 0;    
 int input_max_len = 0;         
 
+void format_two_digits(int val, char* buf) {
+    buf[0] = (val / 10) + '0'; // Cyfra dziesiątek
+    buf[1] = (val % 10) + '0'; // Cyfra jedności
+    buf[2] = '\0';             // Terminator
+}
 
 void dump_mem(unsigned int start_addr, int lines, int* cy) {
     unsigned char* ptr = (unsigned char*)start_addr; 
@@ -140,12 +145,12 @@ void process_command(char* cmd, int* cy) {
         char min[3];
         char sec[3];
         int h, m, s; 
-
-        int actual_h = h + time_zone;
         read_rtc(&s, &m, &h); // ADRESY
-        itoa(h+time_zone, hour);
-        itoa(m, min);
-        itoa(s, sec);
+        int actual_h = (h + time_zone)%24;
+        
+        format_two_digits(actual_h, hour);
+        format_two_digits(m, min);
+        format_two_digits(s, sec);
         kprint_str_gfx(hour, cursor_x, cursor_y, 0xFFFFFF);
         kprint_str_gfx(":", cursor_x+20, cursor_y, 0xFFFFFF);
         kprint_str_gfx(min, cursor_x+30, cursor_y, 0xFFFFFF);

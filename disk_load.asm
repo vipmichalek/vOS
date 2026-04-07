@@ -1,6 +1,6 @@
 load_kernel:
     mov bx, KERNEL_OFFSET ; Gdzie zapisać dane
-    mov dh, 0x1F             ; to są sektory
+    mov dh, 0x2F             ; to są sektory
     mov dl, [BOOT_DRIVE]
     
     mov ah, 0x02 ; czytaj

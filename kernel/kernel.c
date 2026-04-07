@@ -139,9 +139,22 @@ void process_command(char* cmd, int* cy) {
         dump_mem((unsigned int)0x5000000, 10, cy);
     }
     else if (strcmp(cmd, "FILL")) {
+        int bar_width = 400;
+
+        int start_x = 29;
+        int start_y = 29;
+
         fill_screen_fast(0, 85, 170);
         draw_icon(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 24, 24, fdicon);
         draw_icon((SCREEN_WIDTH/2)+30, SCREEN_HEIGHT/2, 24, 24, folder_icon);
+        
+        draw_rect(start_x, start_y, bar_width+2, 300, 255, 255, 255);
+        draw_rect(start_x+1, start_y+21, bar_width, 278, 0, 0, 0);
+        // rysuj jakiś tam gradient
+        for (int i = 0; i < 21; i++) {
+            draw_rect(start_x+1, start_y+1+i, bar_width, 1, 100+4*i, 100+4*i, 100+4*i);
+        }
+        kprint_str_gfx("Test window", start_x+3, start_y+7, 0xFFFFFF);
     }
     else if (strcmp(cmd, "GETRTC")) {
         int time_zone = 2;

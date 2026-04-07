@@ -210,17 +210,32 @@ void draw_cursor(int x, int y, int r, int g, int b) {
     draw_rect(x, y+10, 8, 2, r, g, b);
 }
 
-void draw_window(int width, int height, int bar_height, int x, int y, char* text) {
-    draw_rect(x, y, width+2, height, 255, 255, 255);
-    draw_rect(x+1, y+21, width, height-bar_height-2, 0, 0, 0);
+void draw_window(int width, int height, int bar_height, int x, int y, char* text, int focus) {
     
-    // rysuj jakiś tam gradient
-    for (int i = 0; i < bar_height+1; i++) {
-        draw_rect(x+1, y+1+i, width, 1, 80+5*i, 80+5*i, 80+5*i);
+    // jeżeli focus 0 tytułowy szary
+    // jeżeli focus 1 to on jest niebieski
+
+    if (focus == 0) {
+        draw_rect(x-1, y-1, width+4, height+2, 0,0,0);
+        draw_rect(x, y, width+2, height, 255, 255, 255);
+        draw_rect(x+1, y+21, width, height-bar_height-2, 0, 0, 0);
+        for (int i = 0; i < bar_height+1; i++) {
+            draw_rect(x+1, y+1+i, width, 1, 80+5*i, 80+5*i, 80+5*i);
+        }
+        draw_rect(x+1, y+1, width, 1, 195, 195, 195);
+        draw_rect(x+1, y+2, width, 1, 165, 165, 165);
+        draw_rect(x+1, y+3, width, 1, 135, 135, 135);
+    } else {
+        draw_rect(x-1, y-1, width+4, height+2, 0,0,0);
+        draw_rect(x, y, width+2, height, 0, 135, 195);
+        draw_rect(x+1, y+21, width, height-bar_height-2, 0, 0, 0);
+        for (int i = 0; i < bar_height+1; i++) {
+            draw_rect(x+1, y+1+i, width, 1, 0, (80+5*i)-60, 80+5*i);
+        }
+        draw_rect(x+1, y+1, width, 1, 0, 135, 195);
+        draw_rect(x+1, y+2, width, 1, 0, 105, 165);
+        draw_rect(x+1, y+3, width, 1, 0, 75, 135);
     }
-    draw_rect(x+1, y+1, width, 1, 195, 195, 195);
-    draw_rect(x+1, y+2, width, 1, 165, 165, 165);
-    draw_rect(x+1, y+3, width, 1, 135, 135, 135);
-    // draw_rect(x+1, y+22, width, 1, 255, 255, 255);
+    
     kprint_str_gfx(text, x+3, y+7, 0xFFFFFF);
 }

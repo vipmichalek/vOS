@@ -14,5 +14,5 @@ void draw_color_test();
 void draw_cursor(int x, int y, int r, int g, int b);
 void fill_screen_fast(int r, int g, int b);
 void draw_icon(int start_x, int start_y, int w, int h, unsigned int* icon_data);
-void draw_window(int width, int height, int bar_height, int x, int y, char* text);
+void draw_window(int width, int height, int bar_height, int x, int y, char* text, int focus);
 #endif

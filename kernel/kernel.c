@@ -86,10 +86,8 @@ void k_input(char* buffer, int max_len) {
 
 void draw_desktop() {
     fill_screen_fast(0, 85, 170);
-    draw_window(800, 600, 20, 29, 29, "Program manager");
-    // draw_icon(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 24, 24, fdicon);
-    // draw_icon((SCREEN_WIDTH/2)+30, SCREEN_HEIGHT/2, 24, 24, folder_icon);
-
+    draw_window(800, 600, 20, 29, 29, "Program manager", 0);
+    draw_window(320, 240, 20, 839, 29, "Clock", 1);
 }
 
 void process_command(char* cmd, int* cy) {

@@ -21,8 +21,6 @@ def convert_png_to_c_array(input_path):
         line = "    "
         for x in range(width):
             r, g, b, a = pixels[y * width + x]
-            
-            # Jeśli piksel jest przezroczysty (alpha < 128), dajemy 0
             if a < 128:
                 color_hex = "0x000000"
             else:
@@ -36,6 +34,6 @@ def convert_png_to_c_array(input_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Użycie: python png_to_vos.py ikona.png")
+        print("Use: python kernel/icon.py path/to/your/icon.png")
     else:
         convert_png_to_c_array(sys.argv[1])

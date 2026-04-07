@@ -6,7 +6,7 @@
 #define MAX_ROWS 25
 #define MAX_COLS 80
 #define SCREEN_WIDTH  1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_HEIGHT 960
 #define BYTES_PER_PIXEL 3
 #define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 
@@ -91,6 +91,15 @@ void draw_char(int x, int y, unsigned char font_chars[10], int color) {
 void clear_screen_gfx() {
     for(int i = 0; i < (SCREEN_WIDTH * SCREEN_HEIGHT * BYTES_PER_PIXEL); i++) {
         back_buffer[i] = 0;
+    }
+}
+
+void fill_screen_fast(int r, int g, int b) {
+    unsigned char* ptr = back_buffer;
+    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
+        *ptr++ = (unsigned char)b; 
+        *ptr++ = (unsigned char)g; 
+        *ptr++ = (unsigned char)r; 
     }
 }
 

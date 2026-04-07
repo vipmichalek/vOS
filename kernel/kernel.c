@@ -7,7 +7,7 @@
 #include "rtc.h"
 
 #define SCREEN_WIDTH  1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_HEIGHT 960
 #define BYTES_PER_PIXEL 3
 #define SCREEN_PITCH (SCREEN_WIDTH * BYTES_PER_PIXEL)
 
@@ -137,6 +137,9 @@ void process_command(char* cmd, int* cy) {
         kprint_str_gfx(msg, 10, *cy, 0xFFFFFF);
         *cy += 14;     
         dump_mem((unsigned int)0x5000000, 10, cy);
+    }
+    else if (strcmp(cmd, "FILL")) {
+        fill_screen_fast(0, 100, 255);
     }
     else if (strcmp(cmd, "GETRTC")) {
         int time_zone = 2;

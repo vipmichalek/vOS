@@ -141,6 +141,7 @@ void process_command(char* cmd, int* cy) {
     else if (strcmp(cmd, "FILL")) {
         fill_screen_fast(0, 85, 170);
         draw_icon(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 24, 24, fdicon);
+        draw_icon((SCREEN_WIDTH/2)+30, SCREEN_HEIGHT/2, 24, 24, folder_icon);
     }
     else if (strcmp(cmd, "GETRTC")) {
         int time_zone = 2;

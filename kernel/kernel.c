@@ -25,6 +25,7 @@ char* current_input_ptr = 0;
 int input_max_len = 0;         
 
 int window_running = 0;
+int window_focused = 0;
 
 void format_two_digits(int val, char* buf) {
     buf[0] = (val / 10) + '0'; // Cyfra dziesiątek
@@ -84,10 +85,25 @@ void k_input(char* buffer, int max_len) {
     input_ready = 0;
 }
 
-void draw_desktop() {
+void draw_desktop(int focused) {
     fill_screen_fast(0, 85, 170);
-    draw_window(800, 600, 20, 29, 29, "Program manager", 0);
-    draw_window(320, 240, 20, 839, 29, "Clock", 1);
+    switch(focused) {
+        case(0):
+            draw_window(800, 600, 20, 29, 29, "Program manager", 1);
+            draw_window(320, 240, 20, 839, 29, "Clock", 0);
+            draw_window(320, 240, 20, 839, 279, "About vos", 0);
+            break;
+        case(1):
+            draw_window(800, 600, 20, 29, 29, "Program manager", 0);
+            draw_window(320, 240, 20, 839, 29, "Clock", 1);
+            draw_window(320, 240, 20, 839, 279, "About vos", 0);
+            break;
+        case(2):
+            draw_window(800, 600, 20, 29, 29, "Program manager", 0);
+            draw_window(320, 240, 20, 839, 29, "Clock", 0);
+            draw_window(320, 240, 20, 839, 279, "About vos", 1);
+            break;
+    }
 }
 
 void process_command(char* cmd, int* cy) {
@@ -148,7 +164,7 @@ void process_command(char* cmd, int* cy) {
     }
     else if (strcmp(cmd, "WIN")) {
         window_running = 1;
-        draw_desktop();
+        draw_desktop(0);
     }
     else if (strcmp(cmd, "GETRTC")) {
         int time_zone = 2;
@@ -189,7 +205,7 @@ void refresh_cursor(int color) {
 
 void keyboard_handler_c() {
     unsigned char scancode = inb(0x60);
-
+    
     // obsługa esc
     if (scancode == 0x01) { 
         window_running = 0;
@@ -202,9 +218,14 @@ void keyboard_handler_c() {
 
     // BLOKUJ INNE JAK JEST TEN CAŁY NIBY GUI
     if (window_running) {
-        return; 
+        if (scancode == 0x0F) {
+            window_focused++;
+            draw_desktop(window_focused % 3);
+        }
     }
-    refresh_cursor(0x000000); 
+    if (!window_running) {
+        refresh_cursor(0x000000); 
+    }
 
     if (!(scancode & 0x80)) {
         char c = scancode_to_char(scancode);

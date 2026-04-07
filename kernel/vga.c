@@ -103,6 +103,22 @@ void fill_screen_fast(int r, int g, int b) {
     }
 }
 
+void draw_icon(int start_x, int start_y, int w, int h, unsigned int* icon_data) {
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            unsigned int color = icon_data[y * w + x];
+            
+            // Prosta obsługa "przezroczystości" - jeśli kolor to 0, nie rysuj
+            if (color != 0) {
+                int r = (color >> 16) & 0xFF;
+                int g = (color >> 8) & 0xFF;
+                int b = color & 0xFF;
+                put_pixel(start_x + x, start_y + y, r, g, b);
+            }
+        }
+    }
+}
+
 void kprint_char_gfx(char c, int x, int y, int color) {
     if (c >= 'a' && c <= 'z') c -= 32;
 

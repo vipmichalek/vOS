@@ -88,7 +88,7 @@ void hex_to_str(unsigned char n, char* out) {
 }
 
 void byte_to_hex(unsigned char n, char* out) {
-    const char hex_chars[] = "0123456789ABCDEF";
+    static const char hex_chars[] = "0123456789ABCDEF";
     out[0] = hex_chars[(n >> 4) & 0x0F];
     out[1] = hex_chars[n & 0x0F];
     out[2] = '\0';

@@ -9,9 +9,10 @@ LD := ld
 OBJCOPY := objcopy
 
 # Flags
-CFLAGS := -m32 -ffreestanding -fno-jump-tables -fno-pic -fno-pie -no-pie -fno-stack-protector -I$(SRC_DIR)
+CFLAGS := -m32 -ffreestanding -fno-jump-tables -fno-pic -fno-pie -no-pie -fno-stack-protector \
+					-fno-leading-underscore -nostdlib -nostartfiles -nodefaultlibs -I$(SRC_DIR)
 ASFLAGS := -f elf32
-LDFLAGS := -m elf_i386 -Ttext 0x1000
+LDFLAGS := -m elf_i386 -T linker.ld
 
 # Files (ADD NEW FILES HERE 👇)
 C_SOURCES := io.c vga.c kernel.c ata.c functions.c idt.c timer.c rtc.c
